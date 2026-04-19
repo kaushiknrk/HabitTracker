@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Profile — HabitFlow{% endblock %}
+{% block content %}
+
+<div class="page-hd">
+  <h1>My Profile</h1>
+</div>
+
+<div class="profile-grid">
+
+  <div class="profile-card">
+    <div class="profile-avatar">{{ username[0].upper() }}</div>
+    <div class="profile-name">{{ username }}</div>
+    <div class="profile-joined">Member since {{ joined }}</div>
+  </div>
+
+  <div class="stats-card">
+    <h2 class="sec-title">Statistics</h2>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-num">{{ active_count }}</span>
+        <span class="stat-lbl">Active habits</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{{ total_count }}</span>
+        <span class="stat-lbl">Total created</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{{ best_streak }}</span>
+        <span class="stat-lbl">Longest streak</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">{{ total_points }}</span>
+        <span class="stat-lbl">Total points</span>
+      </div>
+    </div>
+    {% if best_streak > 0 %}
+    <p class="best-habit">Best habit: <strong>{{ best_habit }}</strong> — {{ best_streak }} days</p>
+    {% endif %}
+  </div>
+
+  {% if cat_stats %}
+  <div class="cat-stats-card">
+    <h2 class="sec-title">Categories</h2>
+    {% for row in cat_stats %}
+    <div class="cat-stat-row">
+      <span class="cs-name">{{ row[0] }}</span>
+      <span class="cs-count">{{ row[1] }} habit{{ 's' if row[1] != 1 }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<div style="margin-top:2rem;">
+  <a href="{{ url_for('dashboard') }}" class="btn-secondary">← Back to Dashboard</a>
+</div>
+
+{% endblock %}

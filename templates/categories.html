@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Categories — HabitFlow{% endblock %}
+{% block content %}
+
+<div class="page-hd">
+  <div>
+    <h1>Categories</h1>
+    <p class="page-sub">Default categories are locked. Add and delete your own.</p>
+  </div>
+</div>
+
+<div class="form-card" style="max-width:480px; margin-bottom:2rem;">
+  <form method="POST">
+    <input type="hidden" name="action" value="add"/>
+    <div class="fg">
+      <label>New category name</label>
+      <div class="input-row">
+        <input type="text" name="name" placeholder="e.g. Music" required/>
+        <button type="submit" class="btn-primary">Add</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="cat-list">
+  {% for cat in categories %}
+  <div class="cat-row">
+    <span class="cat-name">{{ cat[1] }}</span>
+    {% if cat[2] == 'Y' %}
+      <span class="badge bdone" style="font-size:0.72rem;">Default</span>
+    {% else %}
+      <form method="POST" onsubmit="return confirm('Delete this category?');">
+        <input type="hidden" name="action"  value="delete"/>
+        <input type="hidden" name="cat_id"  value="{{ cat[0] }}"/>
+        <button type="submit" class="btn-danger-sm">Delete</button>
+      </form>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

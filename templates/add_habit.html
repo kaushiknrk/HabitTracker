@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Add Habit — HabitFlow{% endblock %}
+{% block content %}
+
+<div class="page-hd">
+  <h1>Add a new habit</h1>
+  <p class="page-sub">Choose a habit type first, then fill in the details.</p>
+</div>
+
+<!-- Type selector tabs -->
+<div class="type-tabs">
+  <button class="type-tab active" id="tab-daily"   onclick="switchTab('daily')">1-Day Habit</button>
+  <button class="type-tab"        id="tab-monthly" onclick="switchTab('monthly')">Long-Term (30-day)</button>
+</div>
+
+<div class="form-card">
+
+  <!-- DAILY HABIT FORM -->
+  <form method="POST" id="form-daily" class="habit-form">
+    <input type="hidden" name="habit_type" value="daily"/>
+
+    <div class="fg">
+      <label>Habit name <span class="req">*</span></label>
+      <input type="text" name="name" placeholder="e.g. Morning Run" required/>
+    </div>
+
+    <div class="fg">
+      <label>Category</label>
+      <select name="category_id">
+        <option value="">— Select category —</option>
+        {% for cat in categories %}
+          <option value="{{ cat[0] }}">{{ cat[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="fg-row">
+      <div class="fg">
+        <label>Start time</label>
+        <input type="time" name="start_time"/>
+        <span class="hint">You can only mark done within this window</span>
+      </div>
+      <div class="fg">
+        <label>End time</label>
+        <input type="time" name="end_time"/>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Sub-habits <span class="hint-inline">(optional — all must be done for full streak)</span></label>
+      <div id="subs-daily">
+        <div class="sub-row">
+          <input type="text" name="sub_habits[]" placeholder="e.g. Warm-up"/>
+          <button type="button" class="btn-rm" onclick="rmSub(this)">✕</button>
+        </div>
+      </div>
+      <button type="button" class="btn-add-sub" onclick="addSub('subs-daily')">+ Add sub-habit</button>
+    </div>
+
+    <div class="form-actions">
+      <a href="{{ url_for('dashboard') }}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">Save Habit</button>
+    </div>
+  </form>
+
+  <!-- MONTHLY HABIT FORM -->
+  <form method="POST" id="form-monthly" class="habit-form" style="display:none;">
+    <input type="hidden" name="habit_type" value="monthly"/>
+
+    <div class="fg">
+      <label>Habit name <span class="req">*</span></label>
+      <input type="text" name="name" placeholder="e.g. 30-Day Fitness Challenge" required/>
+    </div>
+
+    <div class="fg">
+      <label>Category</label>
+      <select name="category_id">
+        <option value="">— Select category —</option>
+        {% for cat in categories %}
+          <option value="{{ cat[0] }}">{{ cat[1] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="fg-row">
+      <div class="fg">
+        <label>Start date</label>
+        <input type="date" name="start_date"/>
+        <span class="hint">Can be a future date — pre-scheduling is allowed</span>
+      </div>
+      <div class="fg">
+        <label>Duration (days)</label>
+        <select name="duration">
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+          <option value="21">21 days</option>
+          <option value="30" selected>30 days</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>Sub-habits <span class="hint-inline">(optional)</span></label>
+      <div id="subs-monthly">
+        <div class="sub-row">
+          <input type="text" name="sub_habits[]" placeholder="e.g. Gym session"/>
+          <button type="button" class="btn-rm" onclick="rmSub(this)">✕</button>
+        </div>
+      </div>
+      <button type="button" class="btn-add-sub" onclick="addSub('subs-monthly')">+ Add sub-habit</button>
+    </div>
+
+    <div class="form-actions">
+      <a href="{{ url_for('dashboard') }}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">Save Challenge</button>
+    </div>
+  </form>
+
+</div>
+
+<script>
+function switchTab(type) {
+  document.getElementById('form-daily').style.display   = type === 'daily'   ? 'flex' : 'none';
+  document.getElementById('form-monthly').style.display = type === 'monthly' ? 'flex' : 'none';
+  document.getElementById('tab-daily').classList.toggle('active',   type === 'daily');
+  document.getElementById('tab-monthly').classList.toggle('active', type === 'monthly');
+}
+function addSub(containerId) {
+  const div = document.createElement('div');
+  div.className = 'sub-row';
+  div.innerHTML = '<input type="text" name="sub_habits[]" placeholder="Sub-habit name"/>'
+                + '<button type="button" class="btn-rm" onclick="rmSub(this)">✕</button>';
+  document.getElementById(containerId).appendChild(div);
+}
+function rmSub(btn) {
+  const parent = btn.closest('#subs-daily, #subs-monthly');
+  if (parent.children.length > 1) btn.parentElement.remove();
+}
+</script>
+{% endblock %}

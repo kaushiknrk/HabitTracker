@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ habit_name }} — HabitFlow{% endblock %}
+{% block content %}
+
+<div class="page-hd">
+  <div>
+    <a href="{{ url_for('dashboard') }}" class="back-link">← Dashboard</a>
+    <h1>{{ habit_name }}</h1>
+    <p class="page-sub">
+      {{ category }}
+      {% if habit_type == 'daily' and start_time %}
+        &nbsp;·&nbsp; {{ start_time }} — {{ end_time }}
+      {% elif habit_type == 'monthly' %}
+        &nbsp;·&nbsp; {{ start_date }} — {{ end_date }}
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="streak-badges">
+    <div class="sbadge">
+      <span class="snum">{{ current_streak }}</span>
+      <span class="slbl">current</span>
+    </div>
+    <div class="sbadge">
+      <span class="snum">{{ longest_streak }}</span>
+      <span class="slbl">longest</span>
+    </div>
+    <div class="sbadge sbadge-pts">
+      <span class="snum">{{ total_points }}</span>
+      <span class="slbl">points</span>
+    </div>
+  </div>
+</div>
+
+<!-- Time status banner for daily habits -->
+{% if habit_type == 'daily' and start_time %}
+  {% if time_status == 'active' %}
+    <div class="time-banner time-ok">
+      Time window is OPEN — {{ start_time }} to {{ end_time }} &nbsp;·&nbsp; Now: {{ now_str }}
+    </div>
+  {% elif time_status == 'pending' %}
+    <div class="time-banner time-wait">
+      Window not open yet — opens at {{ start_time }} &nbsp;·&nbsp; Now: {{ now_str }}
+    </div>
+  {% elif time_status == 'closed' %}
+    <div class="time-banner time-closed">
+      Time window closed — was {{ start_time }} to {{ end_time }} &nbsp;·&nbsp; Now: {{ now_str }}
+    </div>
+  {% endif %}
+{% endif %}
+
+<!-- Mark done form -->
+<div class="form-card">
+  {% if is_fully_done %}
+    <div class="done-banner">All done for today!</div>
+  {% endif %}
+
+  <form method="POST">
+    <input type="hidden" name="action" value="mark_done"/>
+
+    {% if sub_habits %}
+      <h2 class="sec-title">Sub-habits</h2>
+      <p class="sec-hint">All must be checked to count as a full streak day.</p>
+      <div class="checklist">
+        {% for sh in sub_habits %}
+        <label class="check-row {% if sh[0] in done_today %}check-done{% endif %}">
+          <input type="checkbox" name="sub_done[]" value="{{ sh[0] }}"
+                 {% if sh[0] in done_today %}checked{% endif %}
+                 {% if time_status == 'closed' or time_status == 'pending' %}disabled{% endif %}/>
+          <span class="check-label">{{ sh[1] }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    {% else %}
+      <label class="check-row {% if is_fully_done %}check-done{% endif %}">
+        <input type="checkbox" name="full_done" value="1"
+               {% if is_fully_done %}checked{% endif %}
+               {% if time_status == 'closed' or time_status == 'pending' %}disabled{% endif %}/>
+        <span class="check-label">Mark habit complete for today</span>
+      </label>
+    {% endif %}
+
+    <div class="form-actions" style="margin-top:1.5rem;">
+      {% if time_status == 'active' or habit_type == 'monthly' %}
+        <button type="submit" class="btn-primary">Save Progress</button>
+      {% elif time_status == 'pending' %}
+        <button type="button" class="btn-disabled" disabled>Opens at {{ start_time }}</button>
+      {% elif time_status == 'closed' %}
+        <button type="button" class="btn-disabled" disabled>Window closed</button>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Delete section -->
+<div class="danger-zone">
+  <h3>Drop this habit</h3>
+  <p>Your streak data can be archived before deletion.</p>
+  <form method="POST" id="delete-form">
+    <input type="hidden" name="action" value="delete"/>
+    <div class="fg" style="margin-bottom:1rem;">
+      <label class="check-row">
+        <input type="radio" name="keep_streak" value="yes" checked/>
+        <span class="check-label">Save streak to archive ({{ current_streak }}-day streak kept)</span>
+      </label>
+      <label class="check-row" style="margin-top:0.5rem;">
+        <input type="radio" name="keep_streak" value="no"/>
+        <span class="check-label">Delete everything permanently</span>
+      </label>
+    </div>
+    <button type="submit" class="btn-danger"
+            onclick="return confirm('Are you sure you want to drop this habit?');">
+      Drop Habit
+    </button>
+  </form>
+</div>
+
+{% endblock %}

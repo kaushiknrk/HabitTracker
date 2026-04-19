@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}HabitFlow{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+{% if session.user_id %}
+<nav class="navbar">
+  <a href="{{ url_for('dashboard') }}" class="nav-brand">HabitFlow</a>
+  <div class="nav-links">
+    <a href="{{ url_for('dashboard') }}"  {% if request.endpoint=='dashboard'  %}class="active"{% endif %}>Dashboard</a>
+    <a href="{{ url_for('categories') }}" {% if request.endpoint=='categories' %}class="active"{% endif %}>Categories</a>
+    <a href="{{ url_for('streaks') }}"    {% if request.endpoint=='streaks'    %}class="active"{% endif %}>Streaks</a>
+  </div>
+  <div class="nav-right">
+    <a href="{{ url_for('profile') }}" class="nav-profile">
+      <span class="avatar">{{ session.username[0].upper() }}</span>
+      <span class="nav-username">{{ session.username }}</span>
+    </a>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+{% endif %}
+
+<main class="main-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-wrap">
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

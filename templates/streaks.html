@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Streaks — HabitFlow{% endblock %}
+{% block content %}
+
+<div class="page-hd">
+  <div>
+    <h1>Streaks &amp; Points</h1>
+    <p class="page-sub">Your progress across all habits.</p>
+  </div>
+  <div class="dash-points">
+    <span class="pts-num">{{ total_points }}</span>
+    <span class="pts-lbl">total points</span>
+  </div>
+</div>
+
+{% if streak_data %}
+<div class="table-card">
+  <table class="streak-table">
+    <thead>
+      <tr>
+        <th>Habit</th>
+        <th>Type</th>
+        <th>Category</th>
+        <th>Current streak</th>
+        <th>Longest streak</th>
+        <th>Points</th>
+        <th>Milestone</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in streak_data %}
+      <tr>
+        <td class="td-name">{{ row[0] }}</td>
+        <td><span class="badge {% if row[5]=='daily' %}bactive{% else %}bpending{% endif %}">{{ row[5] }}</span></td>
+        <td>{{ row[1] or '—' }}</td>
+        <td>{{ row[2] or 0 }} days</td>
+        <td>{{ row[3] or 0 }} days</td>
+        <td class="td-pts">{{ row[4] or 0 }}</td>
+        <td>
+          {% set s = row[2] or 0 %}
+          {% if s >= 30 %}
+            <span class="milestone gold">30-day</span>
+          {% elif s >= 7 %}
+            <span class="milestone silver">7-day</span>
+          {% else %}
+            <span class="milestone none">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="pts-legend">
+  <h3>How points work</h3>
+  <ul>
+    <li>Complete any habit today → <strong>+1 point</strong></li>
+    <li>Hit a 7-day streak → <strong>+5 bonus points</strong></li>
+    <li>Hit a 30-day streak → <strong>+20 bonus points</strong></li>
+    <li>All sub-habits must be done for full streak credit</li>
+    <li>For monthly habits — mark done each day to build your streak</li>
+  </ul>
+</div>
+
+{% else %}
+<div class="empty-state">
+  <p>No streak data yet. Start completing habits!</p>
+  <a href="{{ url_for('dashboard') }}" class="btn-primary">Go to Dashboard</a>
+</div>
+{% endif %}
+{% endblock %}

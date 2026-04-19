@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — HabitFlow{% endblock %}
+{% block content %}
+
+<div class="dash-header">
+  <div>
+    <h1>Good day, {{ username }}!</h1>
+    <p class="dash-date">{{ today_str }} &nbsp;·&nbsp; {{ now_str }}</p>
+  </div>
+  <div class="dash-points">
+    <span class="pts-num">{{ total_points }}</span>
+    <span class="pts-lbl">total points</span>
+  </div>
+</div>
+
+<a href="{{ url_for('add_habit') }}" class="btn-add-center">+ Add Habit</a>
+
+<!-- ── SECTION 1: Daily Habits ─────────────────────────────────────────── -->
+<section class="dash-section">
+  <div class="section-hd">
+    <h2>Today's Habits</h2>
+    <span class="section-badge">{{ daily_habits|length }} habits</span>
+  </div>
+
+  {% if daily_habits %}
+  <div class="habit-grid">
+    {% for h in daily_habits %}
+    <a href="{{ url_for('habit_detail', habit_id=h.id) }}" class="hcard hcard-daily
+        {% if h.is_done %}hcard-done{% elif h.status=='closed' %}hcard-closed{% elif h.status=='pending' %}hcard-pending{% endif %}">
+
+      <div class="hcard-top">
+        <span class="hcard-cat">{{ h.category }}</span>
+        {% if h.is_done %}
+          <span class="badge bdone">Done</span>
+        {% elif h.status == 'active' %}
+          <span class="badge bactive">Active</span>
+        {% elif h.status == 'pending' %}
+          <span class="badge bpending">Pending</span>
+        {% else %}
+          <span class="badge bclosed">Closed</span>
+        {% endif %}
+      </div>
+
+      <div class="hcard-name">{{ h.name }}</div>
+
+      {% if h.start_time %}
+      <div class="hcard-time">
+        {{ h.start_time }} — {{ h.end_time }}
+        {% if h.status == 'pending' %}
+          &nbsp;· opens at {{ h.start_time }}
+        {% elif h.status == 'closed' %}
+          &nbsp;· window closed
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if h.sub_count > 0 %}
+        <div class="hcard-meta">{{ h.sub_count }} sub-habit{{ 's' if h.sub_count != 1 }}</div>
+      {% endif %}
+
+      <div class="hcard-stats">
+        <div class="hstat">
+          <span class="hstat-v">{{ h.current_streak }}</span>
+          <span class="hstat-k">streak</span>
+        </div>
+        <div class="hstat">
+          <span class="hstat-v">{{ h.total_points }}</span>
+          <span class="hstat-k">pts</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <p>No daily habits for today.</p>
+    <a href="{{ url_for('add_habit') }}" class="btn-primary">Add a daily habit</a>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ── SECTION 2: Monthly Habits ──────────────────────────────────────── -->
+<section class="dash-section">
+  <div class="section-hd">
+    <h2>Active 30-Day Challenges</h2>
+    <span class="section-badge">{{ monthly_habits|length }} challenges</span>
+  </div>
+
+  {% if monthly_habits %}
+  <div class="monthly-list">
+    {% for m in monthly_habits %}
+    <div class="mcard {% if m.m_status=='upcoming' %}mcard-upcoming{% elif m.m_status=='ended' %}mcard-ended{% endif %}">
+      <div class="mcard-left">
+        <div class="mcard-top">
+          <span class="hcard-cat">{{ m.category }}</span>
+          {% if m.m_status == 'upcoming' %}
+            <span class="badge bpending">Upcoming</span>
+          {% elif m.m_status == 'ended' %}
+            <span class="badge bclosed">Ended</span>
+          {% elif m.today_done %}
+            <span class="badge bdone">Done today</span>
+          {% else %}
+            <span class="badge bactive">Active</span>
+          {% endif %}
+        </div>
+        <div class="hcard-name">{{ m.name }}</div>
+        <div class="hcard-time">{{ m.start_date }} — {{ m.end_date }}</div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ m.progress_pct }}%"></div>
+          </div>
+          <span class="progress-label">{{ m.done_days }} / {{ m.total_days }} days</span>
+        </div>
+      </div>
+
+      <div class="mcard-right">
+        {% if m.m_status == 'active' and not m.today_done %}
+        <form method="POST" action="{{ url_for('habit_detail', habit_id=m.id) }}">
+          <input type="hidden" name="action" value="mark_done"/>
+          <input type="hidden" name="full_done" value="1"/>
+          <button type="submit" class="btn-mark">Mark today done</button>
+        </form>
+        {% elif m.today_done %}
+          <span class="done-tick">&#10003; Done</span>
+        {% elif m.m_status == 'upcoming' %}
+          <span class="upcoming-msg">Starts {{ m.start_date }}</span>
+        {% endif %}
+        <div class="mcard-stats">
+          <div class="hstat">
+            <span class="hstat-v">{{ m.current_streak }}</span>
+            <span class="hstat-k">streak</span>
+          </div>
+          <div class="hstat">
+            <span class="hstat-v">{{ m.total_points }}</span>
+            <span class="hstat-k">pts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <p>No 30-day challenges yet.</p>
+    <a href="{{ url_for('add_habit') }}" class="btn-primary">Add a monthly challenge</a>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ── SECTION 3: Streaks History ─────────────────────────────────────── -->
+<section class="dash-section">
+  <div class="section-hd">
+    <h2>Streaks History</h2>
+  </div>
+
+  {% if top_streaks %}
+  <div class="streaks-mini">
+    <h3 class="sub-title">Your longest streaks</h3>
+    <div class="streak-row-list">
+      {% for row in top_streaks %}
+      <div class="streak-row-item">
+        <span class="sr-name">{{ row[0] }}</span>
+        <span class="sr-val">{{ row[1] }} days longest &nbsp;·&nbsp; {{ row[2] }} current</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if deleted_streaks %}
+  <div class="deleted-section">
+    <h3 class="sub-title">Deleted streaks archive</h3>
+    {% for ds in deleted_streaks %}
+    <div class="ds-row">
+      <div class="ds-info">
+        <span class="ds-name">{{ ds.habit_name }}</span>
+        <span class="ds-meta">{{ ds.streak_count }} days &nbsp;·&nbsp; {{ ds.start_date }} — {{ ds.end_date }}</span>
+        {% if ds.category %}<span class="ds-cat">{{ ds.category }}</span>{% endif %}
+      </div>
+      <form method="POST" action="{{ url_for('delete_archived', streak_id=ds.id) }}"
+            onsubmit="return confirm('Permanently delete this record?');">
+        <button type="submit" class="btn-danger-sm">Delete forever</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not top_streaks and not deleted_streaks %}
+  <div class="empty-state">
+    <p>Complete habits to build streaks!</p>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}

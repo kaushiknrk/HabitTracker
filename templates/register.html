@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Register — HabitFlow{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">HabitFlow</div>
+    <p class="auth-sub">Create your account to get started.</p>
+    <form method="POST" class="auth-form">
+      <div class="fg">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Pick a username" required/>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Min. 6 characters" required/>
+      </div>
+      <div class="fg">
+        <label>Confirm Password</label>
+        <input type="password" name="confirm" placeholder="Repeat password" required/>
+      </div>
+      <button type="submit" class="btn-primary full">Create Account</button>
+    </form>
+    <p class="auth-switch">Have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+  </div>
+</div>
+{% endblock %}
